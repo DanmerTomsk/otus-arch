@@ -1,0 +1,43 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aspnetcore-ingress
+  namespace: otus
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  defaultBackend:
+    service:
+      name: aspnetapp-service
+      port:
+        number: 8001
+  rules:
+  - host: arch.homework
+    http:
+      paths:
+      - pathType: Prefix
+        path: /()(.*)
+        backend:
+          service:
+            name: aspnetapp-service
+            port:
+              number: 8001
+  - http:
+      paths:
+      - path: /otusapp/pushkarev(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: aspnetapp-service
+            port:
+              number: 8001
+  - host: arch.homework
+    http:
+      paths:
+      - path: /otusapp/pushkarev(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: aspnetapp-service
+            port:
+              number: 8001
