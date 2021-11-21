@@ -24,7 +24,7 @@ namespace AspNetCore.TestApp.Controllers
 
         // GET: user
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> Get()
+        public async Task<ActionResult<IEnumerable<User>>> GetAll()
         {
             try
             {
@@ -40,7 +40,7 @@ namespace AspNetCore.TestApp.Controllers
 
         // GET user/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> Get(int id)
+        public async Task<ActionResult<User>> GetById(int id)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace AspNetCore.TestApp.Controllers
 
         // POST user
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] User value)
+        public async Task<ActionResult> AddUser([FromBody] User value)
         {
             try
             { 
@@ -98,7 +98,7 @@ namespace AspNetCore.TestApp.Controllers
 
         // PUT user/5
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put(int id, [FromBody] UpdateUserModel value)
+        public async Task<ActionResult> UpdateUser(int id, [FromBody] UpdateUserModel value)
         {
             User existingUser;
             try
