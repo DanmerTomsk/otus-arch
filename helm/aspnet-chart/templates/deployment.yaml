@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aspnet-chart.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "aspnet-chart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "aspnet-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+        checksum/config: {{ include (print $.Template.BasePath "/configMap_appsettings.yaml") . | sha256sum }}
+      {{- end }}
+      labels:
+        {{- include "aspnet-chart.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+          - name: web
+            containerPort: 8000
+            protocol: TCP
+        env:
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: db-connection
+                key: dbUsername
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-connection
+                key: dbPassword
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.probePath }}
+            port: web
+          initialDelaySeconds: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.probePath }}
+            port: web            
+        volumeMounts:
+        - name: settings
+          mountPath: "/app/appsettings.json"
+          subPath: appsettings.json
+      initContainers:
+      - name: init-mydb
+        env:        
+          - name: DB_HOST
+            valueFrom: 
+              secretKeyRef:
+                name: {{ .Values.secrets.dbsecretName }}
+                key: {{ .Values.secrets.dbhostKey }}
+        image: busybox:1.28
+        command: ['sh', '-c', "until nslookup ${DB_HOST}.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done"]
+      volumes:
+        - name: settings
+          configMap:
+            name: {{ .Values.appsettingsConfigName }}

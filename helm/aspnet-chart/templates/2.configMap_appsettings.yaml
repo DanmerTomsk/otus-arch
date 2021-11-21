@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aspnetapp-appsettings
+  labels:
+    app: aspnetapp-config
+  namespace: {{ .Values.namespace }}
+data:
+  appsettings.json: |
+    {
+      "Logging": {
+        "LogLevel": {
+          "Default": "Information",
+          "Microsoft": "Warning",
+          "Microsoft.Hosting.Lifetime": "Information"
+        }
+      },
+      "AllowedHosts": "*",
+      "ConnectionStrings": {
+        "DbConnection": "Host=postgres;Port=5437;Database=myapp"
+      }
+    }
+
