@@ -5,6 +5,8 @@ namespace AspNetCore.TestApp.Db
 {
     public class UserDbContext : DbContext
     {
+        private static readonly PrometheusDbConnectionInterceptor _prometheusInterceptor = new PrometheusDbConnectionInterceptor();
+
         public UserDbContext(DbContextOptions<UserDbContext> options) :base(options)
         {
 
@@ -18,7 +20,7 @@ namespace AspNetCore.TestApp.Db
             modelBuilder.UseDefaultColumnCollation("my_collation");
         }
 
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //=> optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=otusDb;Username=postgres;Password=postgres");
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            => optionsBuilder.AddInterceptors(_prometheusInterceptor);
     }
 }

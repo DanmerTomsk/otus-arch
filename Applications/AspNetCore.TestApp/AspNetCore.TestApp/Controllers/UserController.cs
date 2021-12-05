@@ -34,7 +34,7 @@ namespace AspNetCore.TestApp.Controllers
             }
             catch (Exception ex)
             {
-                return Problem(ex.Message, title: "Can't get data from DB");
+                return Problem(ex.Message, title: "Can't get data from DB", type: Constants.DbConnectionExceptionTypeName);
             }
         }
 
