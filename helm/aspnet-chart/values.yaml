@@ -10,7 +10,7 @@ image:
   repository: danmer1tomsk/otus
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "aspnet_testapp_v1.0.2"
+  tag: "aspnet_testapp_v1.0.3"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -45,6 +45,10 @@ service:
   port: 8001
   targetPort: 8000
   name: "aspnetapp-service"
+
+metrics:
+  serviceMonitor:
+    enabled: true
 
 ingress:
   enabled: true

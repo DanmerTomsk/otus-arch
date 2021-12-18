@@ -39,9 +39,6 @@ namespace AspNetCore.TestApp
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 
-        private static readonly Counter TickTock =
-            Metrics.CreateCounter("sampleapp_ticks_total", "Just keeps on ticking");
-
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {

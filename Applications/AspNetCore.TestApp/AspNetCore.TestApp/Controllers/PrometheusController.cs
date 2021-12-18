@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,12 +11,19 @@ namespace AspNetCore.TestApp.Controllers
     public class PrometheusController : ControllerBase
     {
         private static int _requestAttempt = 0;
-        private static SemaphoreSlim _requestAttemptSemaphore = new SemaphoreSlim(1);
+        private static Random _random = new Random(DateTime.Now.Millisecond);
 
         [HttpGet("failByAttempt")]
-        public async Task<ActionResult<int>> FailByAttempt([FromQuery(Name = "attempt")] int expectedAttemptCount = 3)
+        public async Task<ActionResult<int>> FailByAttempt(
+            [FromQuery(Name = "attempt")] int expectedAttemptCount = 3,
+            [FromQuery(Name = "useLatency")] bool useRandomLatency = false)
         {
-            await _requestAttemptSemaphore.WaitAsync(HttpContext.RequestAborted);
+            if (useRandomLatency)
+            { 
+                var delayMs = _random.Next(1000);
+                await Task.Delay(TimeSpan.FromMilliseconds(delayMs));
+            }
+
             try
             {
                 _requestAttempt++;
@@ -28,7 +36,6 @@ namespace AspNetCore.TestApp.Controllers
             }
             finally
             {
-                _requestAttemptSemaphore.Release();
             }
         }
     }

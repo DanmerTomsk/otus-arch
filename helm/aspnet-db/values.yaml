@@ -12,6 +12,20 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
+exporter:
+  replicaCount: 1
+  port: 9187
+  image:
+    repository: wrouesnel/postgres_exporter
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "latest"
+  service:
+    type: NodePort
+    port: 9187
+    targetPort: 9187
+    name: "exporter"
+
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
@@ -27,3 +41,7 @@ secrets:
   
 migration:
   execute: true
+  
+metrics:
+  serviceMonitor:
+    enabled: true

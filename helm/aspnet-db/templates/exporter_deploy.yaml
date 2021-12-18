@@ -1,0 +1,54 @@
+{{- if .Values.metrics.serviceMonitor.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aspnet-db.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    application: exporter
+    {{- include "aspnet-db.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.exporter.replicaCount }}
+  selector:
+    matchLabels:
+      application: exporter
+      {{- include "aspnet-db.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+      labels:
+        application: exporter
+        {{- include "aspnet-db.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.exporter.image.repository }}:{{ .Values.exporter.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.exporter.image.pullPolicy }}
+        ports:
+          - name: export
+            containerPort: {{ .Values.exporter.port }}
+            protocol: TCP
+        env:
+          - name: DATA_SOURCE_USER
+            valueFrom:
+              secretKeyRef:
+                name: db-connection
+                key: dbUsername
+          - name: DATA_SOURCE_PASS
+            valueFrom:
+              secretKeyRef:
+                name: db-connection
+                key: dbPassword
+          - name: DB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: db-connection
+                key: dbHost
+          - name: DB_PORT
+            valueFrom:
+              secretKeyRef:
+                name: db-connection
+                key: dbPort
+          - name: DATA_SOURCE_URI
+            value: "$(DB_HOST):$(DB_PORT)/myapp?sslmode=disable"
+{{- end }}

@@ -1,0 +1,21 @@
+{{- if .Values.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "aspnet-chart.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "aspnet-chart.labels" . | nindent 4 }}
+spec:
+  jobLabel: {{ include "aspnet-chart.fullname" . }}
+  namespaceSelector:
+    matchNames:
+    - "{{ .Values.namespace }}"
+  selector:
+    matchLabels:
+      {{- include "aspnet-chart.selectorLabels" . | nindent 6 }}
+  endpoints:
+  - interval: 15s
+    port: web
+    path: /metrics
+{{- end }}      
