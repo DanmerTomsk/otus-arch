@@ -1,0 +1,9 @@
+{
+  "ConnectionStrings": {
+    "DbConnection": "Host=localhost;Port=5432;Database=otusDb;"
+  },
+  "AuthorizationOptions": {
+    "JwtKey": "MySecretJWTKey1324",
+    "Issuer": "AspNetCore.AuthService"
+  }
+}

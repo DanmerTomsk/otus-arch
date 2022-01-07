@@ -1,0 +1,11 @@
+{
+  "ConnectionInfo": {
+    "DbHost": "localhost",
+    "DbPort": 5432,
+    "DbName": "otusAuthDb"
+  },
+  "TokenOptions": {
+    "PublicKey": "MIGJAoGBAI2NA2oNx3uqUQly7hYBNqKiKtcxjNi1FL2ht8cf6xh2VS4t4p4UGiyxZ/eaThqiMugQeHEhRT5VlTUY1fC9+QIhZMAkRg8aue7uCyTeDod2ImAGVRKCuoAthorE8FVymwqRKoXCB/vjqPnJUF8z3U7zZm9jheLLSNuLM3WiEt5TAgMBAAE=",
+    "Issuer": "AspNetCore.AuthService"
+  }
+}

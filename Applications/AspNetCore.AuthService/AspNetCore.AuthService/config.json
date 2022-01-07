@@ -1,0 +1,12 @@
+{
+  "ConnectionInfo": {
+    "DbHost": "localhost",
+    "DbPort": 5432,
+    "DbName": "otusAuthDb"
+  },
+  "TokenOptions": {
+    "PrivateKey": "MIICXAIBAAKBgQCNjQNqDcd7qlEJcu4WATaioirXMYzYtRS9obfHH+sYdlUuLeKeFBossWf3mk4aojLoEHhxIUU+VZU1GNXwvfkCIWTAJEYPGrnu7gsk3g6HdiJgBlUSgrqALYaKxPBVcpsKkSqFwgf746j5yVBfM91O82ZvY4Xiy0jbizN1ohLeUwIDAQABAoGAVKWqEAazbyF3mnXvKJuLJ5BgnBVWi9Ul1QzbUKmmthc1cwsfhLayvF1OtgPBhy3N0Xbf/48M0GzvcDQs4+1G9XXcYYgCgHCUKxhGeJ8S7NqO8fzHAn6mPXPCfdoIq1Cd2wJZTYe5wRdlr/8TvHCUQn9/okzc96A6/6Hp6XwAjgECQQDo8qX63O59512hFa1Xk/5451cum/Mv5E4FUzSdjXiLoBI6n4/hyhxjOumno/OPz2MBK2s6TclVZXOkV0C52VNTAkEAm474uKjfD/QcsxQErJVbP4hpDlM4OelyBYCYKEwaTWBqjPq5xhd/guTcJoj//wDAnsuFXOmbPTzdMWatpbHpAQJAT4fggSiCyDuArOmAuADQBak+C6y0t2oj9Q92TEArosfw0VD+x6DAVmSbt19zXWr5q0GOp2Y9UcmEVNxxPcJj/wJAOSFP/Vmf2pcXtzkh4lRUF8g8dRNhMfuncZfhyeLxQfuoBjDK65KTtPniVJC6G+gl1ev/BbmR1vK0dcE1AwaNAQJBAKiZx+qbLG/2K8uULd/NMOqETX7zw8I2/owqAk5c1JkFLR845p2zn/Cun9WhVKgLWlKYMC86mL3w/reC3bEcUU4=",
+    "Issuer": "AspNetCore.AuthService",
+    "TokenLifetimeInMinutes": 600
+  }
+}
