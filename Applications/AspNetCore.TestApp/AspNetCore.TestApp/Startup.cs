@@ -10,10 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using Prometheus;
-using Prometheus.HttpMetrics;
 using System;
 using System.Data.Common;
-using System.Threading;
 
 namespace AspNetCore.TestApp
 {
@@ -33,7 +31,7 @@ namespace AspNetCore.TestApp
             services.AddControllers();
 
             services.AddDbContext<UserDbContext>(options =>
-            options.UseNpgsql(GetDbConnection()));
+                options.UseNpgsql(GetDbConnection()));
 
             services.AddHealthChecks();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -67,6 +65,12 @@ namespace AspNetCore.TestApp
                 {
                     var httpConnectionFeature = context.Features.Get<IHttpConnectionFeature>();
                     var localIpAddress = httpConnectionFeature?.LocalIpAddress;
+
+                    if (localIpAddress is null)
+                    {
+                        context.Response.StatusCode = StatusCodes.Status404NotFound;
+                        return;
+                    }
                     await context.Response.WriteAsync(localIpAddress.ToString());
                 });
 
@@ -99,6 +103,7 @@ namespace AspNetCore.TestApp
 
             var connectionBuilder = new NpgsqlConnectionStringBuilder(configConn);
 
+#if !DEBUG
             if (!string.IsNullOrWhiteSpace(connectionBuilder.Password))
             {
                 throw new InvalidOperationException("Remove password from connection string!");
@@ -114,6 +119,7 @@ namespace AspNetCore.TestApp
 
             connectionBuilder.Username = user;
             connectionBuilder.Password = pass;
+#endif
 
             return new NpgsqlConnection(connectionBuilder.ConnectionString);
         }

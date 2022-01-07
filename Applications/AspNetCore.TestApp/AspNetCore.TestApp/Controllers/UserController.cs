@@ -100,7 +100,7 @@ namespace AspNetCore.TestApp.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateUser(int id, [FromBody] UpdateUserModel value)
         {
-            User existingUser;
+            User? existingUser;
             try
             {
                 value.Id = id;
@@ -154,7 +154,7 @@ namespace AspNetCore.TestApp.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            User user;
+            User? user;
             try
             {
                 user = await _userDbContext.Users.FindAsync(id);

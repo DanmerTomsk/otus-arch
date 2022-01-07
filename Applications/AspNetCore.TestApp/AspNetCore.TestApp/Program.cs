@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 namespace AspNetCore.TestApp
@@ -7,7 +8,11 @@ namespace AspNetCore.TestApp
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            CreateHostBuilder(args)
+                .ConfigureAppConfiguration(configBuilder =>
+                    configBuilder.AddJsonFile("config.json", optional: false, reloadOnChange: false))
+                .Build()
+                .Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
