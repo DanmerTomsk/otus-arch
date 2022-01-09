@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-statefulset
+  namespace: {{ .Values.namespace }}
+spec:
+  serviceName: {{ .Values.service.name }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+        {{- include "aspnet-auth-db.labels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:12.8
+        ports:
+        - containerPort: 5432
+          name: postgredbport
+        env:
+          - name: POSTGRES_DB
+            valueFrom: 
+              secretKeyRef:
+                name: db-connection
+                key: dbName
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: db-connection
+                key: dbUsername
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-connection
+                key: dbPassword
+        volumeMounts:
+        - name: postgredb
+          mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+  - metadata:
+      name: postgredb
+      namespace: {{ .Values.namespace }}
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 2Gi

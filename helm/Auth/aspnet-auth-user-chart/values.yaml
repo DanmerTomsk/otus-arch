@@ -1,0 +1,73 @@
+# Default values for aspnet-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: otus-pushkarev-auth
+
+replicaCount: 2
+
+image:
+  repository: danmer1tomsk/otus_auth_user_service
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "v1.0.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+probePath: /health
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+  name: "aspnetapp-user-service"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: 
+    nginx.ingress.kubernetes.io/auth-url: http://aspnetapp-auth-service.otus-pushkarev-auth.svc.cluster.local/auth/check
+    nginx.ingress.kubernetes.io/auth-response-headers: Authorization
+    kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: arch.homework
+      paths:
+      - pathType: Prefix
+        path: /
+              
+unauthIngress:
+  enabled: true
+  className: "nginx"
+  annotations: 
+    kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: arch.homework
+      paths:
+      - pathType: Prefix
+        path: /user/register
+      - pathType: Prefix
+        path: /health
+  
+DbSecrets:
+  dbsecretName: db-connection
+  dbhostKey: dbHost
+  
+appsettingsConfigName: user-service-appsettings
+jsonConfigName: user-service-config

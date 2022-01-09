@@ -1,0 +1,57 @@
+# Default values for aspnet-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: {{ default "otus-pushkarev-auth" .Release.Namespace }}
+
+replicaCount: 1
+
+image:
+  repository: danmer1tomsk/otus_auth_service
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "v1.0.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+probePath: /health
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 8000
+  name: "aspnetapp-auth-service"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: 
+    kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: arch.homework
+      paths:
+      - pathType: Prefix
+        path: /auth
+  
+DbSecrets:
+  dbsecretName: db-connection
+  dbhostKey: dbHost
+  
+appsettingsConfigName: auth-service-appsettings
+jsonConfigName: auth-service-config
