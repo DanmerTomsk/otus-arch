@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-namespace: {{ default "otus-pushkarev-auth" .Release.Namespace }}
+namespace: otus-pushkarev-auth
 
 replicaCount: 1
 
@@ -13,8 +13,6 @@ image:
   tag: "v1.0.0"
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
 
 probePath: /health
 

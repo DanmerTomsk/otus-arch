@@ -14,7 +14,7 @@ namespace AspNetCore.AuthService.Controllers
     [ApiController]
     public sealed class AuthorizationController : ControllerBase
     {
-        private const string TokenHeaderName = "x-auth-token";
+        private const string TokenHeaderName = "Authorization";
         private const string SessionIdCookieName = "sid";
 
         private readonly AccountsDbContext _accountsDbContext;
@@ -65,7 +65,7 @@ namespace AspNetCore.AuthService.Controllers
 
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-            HttpContext.Response.Headers.Add(TokenHeaderName, encodedJwt);
+            HttpContext.Response.Headers.Add(TokenHeaderName, $"Bearer {encodedJwt}");
 
             return Ok();
         }

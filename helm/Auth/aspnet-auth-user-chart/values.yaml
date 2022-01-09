@@ -13,8 +13,6 @@ image:
   tag: "v1.0.0"
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
 
 probePath: /health
 

@@ -4,6 +4,7 @@ using AspNetCore.Common.Helpers;
 using AspNetCore.Common.Models;
 using AspNetCore.UserService.Helpers;
 using AspNetCore.UserService.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ namespace AspNetCore.UserService.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize]
     public class UserController : Controller
     {
         private readonly AccountsDbContext _authorizationDbContext;
@@ -22,7 +24,6 @@ namespace AspNetCore.UserService.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetUsers()
         {
             if (User.IsInRole(Constants.AdminRoleName))
@@ -43,7 +44,6 @@ namespace AspNetCore.UserService.Controllers
 
         // GET user/5
         [HttpGet("{id}")]
-        [Authorize]
         public async Task<ActionResult<DbUser>> GetById(int id)
         {
             try
@@ -74,7 +74,8 @@ namespace AspNetCore.UserService.Controllers
         }
 
         // POST user
-        [HttpPost]
+        [HttpPost("register")]
+        [AllowAnonymous]
         public async Task<ActionResult> RegisterUser([FromBody] NewUser value)
         {
             try
@@ -118,7 +119,6 @@ namespace AspNetCore.UserService.Controllers
 
         // PUT user/5
         [HttpPut("{id}")]
-        [Authorize]
         public async Task<ActionResult> UpdateUser(int id, [FromBody] UpdateUserModel value)
         {
             DbUser? existingUser;
@@ -188,7 +188,6 @@ namespace AspNetCore.UserService.Controllers
 
         // DELETE user/5
         [HttpDelete("{id}")]
-        [Authorize]
         public async Task<ActionResult> Delete(int id)
         {
             DbUser? user;
