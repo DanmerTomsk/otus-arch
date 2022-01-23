@@ -1,0 +1,72 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+actor "Frontend"                  as User
+queue "OrderQ"                  as OrderQ             #LightBlue
+participant "OrderSvc"          as Order
+participant "StoreSvc"          as Store
+queue "BillingQ"                as BillingQ           #LightBlue
+participant "BillingSvc"        as Billing
+queue "NotificationQ"           as NotifyQ            #LightBlue
+participant "NotificationSvc"   as Notify
+
+User -> OrderQ : OrderInfo\n(products, counts, user_email, order_uid)
+OrderQ -> Order : OrderInfo\n(products, counts, user_email, order_uid)
+
+Order -> Store : OfferInfo\n(products, counts)\nCheck and reserve\n/store/reserve
+
+alt #Pink Check prices or count failed
+
+    Store -> Order : 409 updated products info
+	Order -> OrderQ : Notify user for changed prices or quantity of goods
+	OrderQ -> User : Notify user for changed prices or quantity of goods
+
+else #LightGreen 
+
+    Store -> Order : 200 Reservation Id, expiration time
+    Order -> BillingQ : Amount payable, order_id
+	
+	group #LightGreen Payment process
+	
+		BillingQ -> Billing : Amount payable, order_id
+		Billing -> OrderQ : Payment request Accepted, payment Id
+		
+	end
+	
+	OrderQ -> Order : Payment request Accepted, payment Id
+	Order -> OrderQ : Notify user for accepted order
+	OrderQ -> User : Notify user for accepted order
+	Order -> NotifyQ : Notify user for accepted order
+	NotifyQ -> Notify : Notify user for accepted order		
+	
+	alt #LightGreen Payment success
+	
+		Billing -> OrderQ : Payment success, order_Id
+		OrderQ -> Order : Payment success, order_Id
+		Order -> Store : reservation_Id\n/store/reserve/apply/{reserve_id}
+		alt #LightBlue Can't find reservation
+			Store -> Order : 404
+			Order -> Store : OfferInfo (products, counts)\nCheck and reserve\n/store/reserve
+			alt #Pink Check prices or count failed
+				Store -> Order : 409 updated products info
+				Order -> NotifyQ : Send error info to support
+				NotifyQ -> Notify : Send error info to support
+			else #LightBlue
+				Store -> Order : 200 Reservation Id
+				Order -> Store : reservation_Id\n/store/reserve/apply/{reserve_id}
+			end
+		end
+		
+		"Order" -> "NotifyQ" : Notify user for success order payment
+		"NotifyQ" -> "Notify" : Notify user for success order payment
+	
+	else #Pink Payment failed
+	
+		Billing -> OrderQ : order_Id, failed
+		OrderQ -> Order : order_Id, failed
+		Order -> NotifyQ : user_email, order_user_info
+		NotifyQ -> Notify : user_email, order_user_info
+	
+	end
+end
+@enduml

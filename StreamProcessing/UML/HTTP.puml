@@ -1,0 +1,83 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+actor User
+participant "API gateway"       as Api
+participant "Auth service"      as Auth
+participant "OrderSvc"          as Order
+participant "StoreSvc"          as Store
+participant "BillingSvc"        as Billing
+participant "NotificationSvc"   as Notify
+
+== Auth ==
+
+User -> Api : OrderInfo\n(products, counts, user_email, order_uid)\nPOST /order/create
+
+Api -> Auth : Запрос авторизации
+
+alt #LightBlue session cookie exists
+
+Auth -> Api : Авторизован - 200
+Api -> Order : OrderInfo\n(products, counts, user_email, order_uid)\nPOST /order/create
+
+else #Pink
+
+"Auth service" -> "User" : Не авторизован - 401
+"User" -> "Api gateway" : Запрос /login
+
+== Billing ==
+
+User -> Api : Create user\nPOST /user/create
+Api -> Auth : Create user\nPOST /user/create
+Auth -> Billing : Create user.\nUser_uid\nPOST /billing/user/create
+Auth -> User : 200. Session cookie
+
+Billing -> User : Created user Id
+User -> Billing : Add money\nPUT /billing/addMoney
+Billing -> User : 200
+User -> Billing : Add money\nGET /billing/user
+Billing -> User : Amount of money
+
+== Order ==
+
+Order -> Store : OfferInfo (products, counts)\nCheck and reserve\n/store/reserve
+
+alt #Pink Check prices or count failed
+
+    Store -> Order : 409 updated products info
+    Order -> User : 409 updated products info
+
+else #LightGreen 
+
+    Store -> Order : 200 Reservation Id, expiration time
+    Order -> Billing : Amount payable, order_id\n/billing/pay
+    Billing -> Order : 202 Accepted, payment URL
+	Order -> Notify : Notify user for accepted order\n/notification/user/order/success
+    Order -> User : 202 Accepted, payment URL, expiration time
+
+	alt #LightGreen Payment success
+
+		Billing -> Order : order_Id\n/order/payment/{order_uid}/apply
+		Order -> Store : reservation_Id\n/store/reserve/apply/{reserve_id}
+		alt #LightBlue Can't find reservation
+			Store -> Order : 404
+			Order -> Store : OfferInfo (products, counts)\nCheck and reserve\n/store/reserve
+			alt #Pink Check prices or count failed
+				Store -> Order : 409 updated products info
+				Order -> Notify : Send error info to support\n/notification/support/store/rereserve
+			else #LightBlue
+				Store -> Order : 200 Reservation Id
+				Order -> Store : reservation_Id\n/store/reserve/apply/{reserve_id}
+			end
+		end
+		
+		"Order" -> "Notify" : Notify user for success order payment\n/notification/user/payment/success
+
+	else #Pink Payment failed
+
+		Billing -> Order : order_Id, failed\n/order/payment/{order_uid}/failed
+		Order -> Notify : user_email, order_user_info\n/notification/user/payment/failed	
+
+	end
+end
+@enduml

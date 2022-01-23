@@ -1,0 +1,430 @@
+swagger: "2.0"
+info:
+  description: "This is a server for OTUS arch-homework."
+  version: "1.0.0"
+  title: "Otus store order"
+  contact:
+    email: "danmerrus@gmail.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+
+host: "myhost.com"
+basePath: "/"
+
+
+tags:
+- name: "order"
+  description: "Everything about orders"
+- name: "store"
+  description: "Access to store functions"
+- name: "billing"
+  description: "Access to billing for payments"
+- name: "notification"
+  description: "Access to notifications"
+
+
+schemes:
+- "https"
+- "http"
+
+
+paths:
+  /order/create:
+    post:
+      tags:
+      - "order"
+      summary: "Create a new order"
+      description: ""
+      operationId: "createOrder"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "OrderInfo object that needs to be added to the store"
+        required: true
+        schema:
+          $ref: "#/definitions/NewOrderInfo"
+      responses:
+        "409":
+          description: "Prices has been updated or not enough products in stock"
+          schema:
+            $ref: "#/definitions/OrderConflictInfo"
+        "202":
+          description: "Order was accepted"
+          schema:
+            description: "Payment URI"
+            type: "string"
+            format: "uri"
+
+  /order/{orderId}:
+    get:
+      tags:
+      - "order"
+      summary: "Get order info"
+      description: ""
+      operationId: "getOrder"
+      produces:
+      - "application/json"
+      security:
+      - store_auth:
+        - "read:order"
+      parameters:
+      - name: "orderId"
+        in: "path"
+        description: "Order ID to return"
+        required: true
+        type: "string"
+        format: "uuid"
+      responses:
+        "404":
+          description: "Can't find your order"
+        "200":
+          description: "Return order info"
+          schema:
+            $ref: "#/definitions/OfferInfo"
+
+  /order/payment/{order_uid}/apply:
+    post:
+      tags:
+      - "order"
+      summary: "Get order info"
+      description: ""
+      operationId: "applyPayOrder"
+      parameters:
+      - name: "order_uid"
+        in: "path"
+        description: "Order ID to apply"
+        required: true
+        type: "string"
+        format: "uuid"
+      responses:
+        "200":
+          description: "Payment was accepted"
+
+  /order/payment/{order_uid}/failed:
+    post:
+      tags:
+      - "order"
+      summary: "Get order info"
+      description: ""
+      operationId: "failedPayOrder"
+      parameters:
+      - name: "order_uid"
+        in: "path"
+        description: "Order ID to set failed payment"
+        required: true
+        type: "string"
+        format: "uuid"
+      responses:
+        "200":
+          description: "Payment was accepted"
+
+  /store/reserve:
+    post:
+      tags:
+      - "store"
+      summary: "Check and reserve products in stock"
+      operationId: "reserveProducts"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Offer info that needs to be added to the store"
+        required: true
+        schema:
+          $ref: "#/definitions/OfferInfo"
+      responses:
+        "409":
+          description: "Prices has been updated or not enough products in stock"
+          schema:
+            $ref: "#/definitions/OrderConflictInfo"
+        "200":
+          description: "Reservation was accepted."
+          schema:
+            $ref: "#/definitions/ReservationInfo"
+
+  /store/reserve/apply/{reserve_id}:
+    post:
+      tags:
+      - "store"
+      summary: "Check and reserve products in stock"
+      operationId: "reserveApply"
+      parameters:
+      - in: "path"
+        name: "reserve_id"
+        description: "Reservation id that needs to be applied"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "200":
+          description: "Reservation was applied."
+        "404":
+          description: "Reservation was not found."
+
+  /billing/pay:
+    post:
+      tags:
+      - "billing"
+      summary: "Request pay for order"
+      operationId: "billingPay"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "PayInfo that needs to be payable"
+        required: true
+        schema:
+          $ref: "#/definitions/PayInfo"
+      responses:
+        "202":
+          description: "Prices has been updated or not enough products in stock"
+          schema:
+            description: "Payment id"
+            type: "string"
+            format: "uuid"
+
+  /notification/user/payment/success:
+    post:
+      tags:
+      - "notification"
+      summary: "Notify user for success order payment"
+      operationId: "notifySuccessPay"
+      consumes:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Order info for notification"
+        required: true
+        schema:
+          $ref: "#/definitions/NotificationOrderInfo"
+      responses:
+        "200":
+          description: "Notification was accepted."
+
+  /notification/user/order/success:
+    post:
+      tags:
+      - "notification"
+      summary: "Notify user for accepted order"
+      operationId: "notifyOrderAccept"
+      consumes:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Order accepted info for notification"
+        required: true
+        schema:
+          $ref: "#/definitions/NotificationOrderAcceptedInfo"
+      responses:
+        "200":
+          description: "Notification was accepted."
+
+  /notification/user/payment/failed:
+    post:
+      tags:
+      - "notification"
+      summary: "Notify user for failed order payment"
+      operationId: "notifyFailedPay"
+      consumes:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Order info for notification"
+        required: true
+        schema:
+          $ref: "#/definitions/NotificationOrderInfo"
+      responses:
+        "200":
+          description: "Notification was accepted."
+
+  /notification/support/store/rereserve:
+    post:
+      tags:
+      - "notification"
+      summary: "Notify support for store rereserve"
+      operationId: "notifyFailedStoreReserve"
+      consumes:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Failed reservation id"
+        required: true
+        schema:
+          $ref: "#/definitions/NotificationFailedReserveInfo"
+      responses:
+        "200":
+          description: "Notification was accepted."
+
+
+securityDefinitions:
+  store_auth:
+    type: "oauth2"
+    authorizationUrl: "http://{url}/oauth/dialog"
+    flow: "implicit"
+    scopes:
+      write:order: "add orders to your account"
+      read:order: "read your orders"
+  api_key:
+    type: "apiKey"
+    name: "x-Auth-key"
+    in: "header"
+
+
+definitions:
+  NewOrderInfo:
+    type: "object"
+    properties:
+      order_uid:
+        type: "string"
+        format: "uuid"
+      user_email:
+        type: "string"
+        format: "email"
+      products:
+        type: "array"
+        items:
+          $ref: "#/definitions/ProductUserInfo"
+
+  OrderConflictInfo:
+    type: "array"
+    items:
+      $ref: "#/definitions/ProductUserInfo"
+
+  OfferInfo:
+    type: "array"
+    items:
+      $ref: "#/definitions/ProductUserInfo"
+
+  ProductUserInfo:
+    type: "object"
+    properties:
+      productid:
+        type: "integer"
+        format: "int64"
+      count:
+        type: "integer"
+        format: "int32"
+      price:
+        type: "number"
+        format: "double"
+
+  PayInfo:
+    type: "object"
+    properties:
+      amount_pay:
+        type: "number"
+        format: "double"
+      order_uid:
+        type: "string"
+        format: "uuid"
+
+  ReservationInfo:
+    type: "object"
+    properties:
+      amount_pay:
+        description: "Reservation ID"
+        type: "integer"
+        format: "int64"
+      order_uid:
+        description: "Reservation expired date"
+        type: "string"
+        format: "date-time"
+
+  NotificationOrderInfo:
+    type: "object"
+    properties:
+      email:
+        type: "string"
+        format: "email"
+      order:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            productName:
+              type: "string"
+            pruductUid:
+              description: "Product uid for link"
+              type: "string"
+              format: "uuid"
+            count:
+              type: "integer"
+              format: "int32"
+            price:
+              type: "number"
+              format: "double"
+
+  NotificationOrderAcceptedInfo:
+    type: "object"
+    properties:      
+      email:
+        type: "string"
+        format: "email"
+      payment_link:
+        type: "string"
+        format: "uri"
+      order:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            productName:
+              type: "string"
+            pruductUid:
+              description: "Product uid for link"
+              type: "string"
+              format: "uuid"
+            count:
+              type: "integer"
+              format: "int32"
+            price:
+              type: "number"
+              format: "double"
+
+  NotificationFailedReserveInfo:
+    type: "object"
+    properties:
+      reserve_id:
+        type: "integer"
+        format: "int64"
+      order_id: 
+        type: "integer"
+        format: "int64"              
+      order:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            productName:
+              type: "string"
+            pruductUid:
+              description: "Product uid for link"
+              type: "string"
+              format: "uuid"
+            count:
+              type: "integer"
+              format: "int32"
+            price:
+              type: "number"
+              format: "double"
+
+
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"
